@@ -1,8 +1,9 @@
 DevOps-Project-with-Jenkins-Maven-SonaQube-Docker-and-EKS
 
 Steps:
+A. Install and Conigure Jenkins-Master and Jenkins-Agent
 1. Setup Jenkins-Master
-    #### a. Launch Jenkins-Master in EC2
+    a. Launch Jenkins-Master in EC2
         > Ubuntu
         > t2.micro
         > atleast 15GiB storage
@@ -98,3 +99,31 @@ Steps:
     d. Test
         1. Dashboard -> Create job -> put "Test" -> click Pipeline -> Click OK
         2. Pipeline Script -> Hello World -> Apply -> Save -> Build Now
+
+
+B. Install Maven to Jenkins and Add Github Credentials to Jenkins
+1. Install Maven and Eclipse Plugins 
+    a. Manage Jenkins -> Plugins -> Available Plugins >  Search "Maven" then "Eclipse"
+        > Maven Integration
+        > Pipeline Maven Integration
+        > Eclipse Temurin Installer
+    b. Manage Jenkins -> Tools -> Maven Installations
+        1. Name: Maven3
+        2. Install automatically: (ticked)
+        3. Version: 3.9.9
+        4. Apply and Save
+    c. Manage Jenkins -> Tools > JDK Installations
+        1. Name: Java17
+        2. Install automatically: (ticked)
+        3. Add Installer: Install from adoptium.net
+        4. Version: jdk-17.0.5+8
+        5. Apply and Save
+2. Add Github Credentials to Jenkins
+    a. Manage Jenkins -> Credentials -> Add Credentials
+        1. Kind: Username with password
+        2. Scope: Globa (Jenkins, nodes, items, all child item, etc)
+        3. Username: <github username>
+        4. password: <github password or token>
+        5. ID: e.g. github
+        6. Description: e.g. github
+        7. Create
