@@ -6,7 +6,7 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
     a. Launch Jenkins-Master in EC2
         > Ubuntu
         > t2.micro
-        > atleast 15GiB storage
+        > 15GiB storage (atleast)
     b. Connect via SSH or EC2 Instance Connect (to update hostname)
         1. sudo apt update
         2. sudo apt upgrade
@@ -132,8 +132,10 @@ B. Install Maven to Jenkins and Add Github Credentials to Jenkins
 C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI Job on Jenkins
 1. Create Jenkinsfile
     > pipeline { }
+
 2. Setup Agent
     > agent { label '<agent-name>'} e.g. agent { label 'jenkins-agent' }
+
 3. Setup Stages
     > stages{ 
         stage ("<stage-name>") {
@@ -146,6 +148,7 @@ C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI 
     > Checkout from SCM
     > Build Application
     > Test Application
+
 4. Build Pipeline
     a. Build -> New Item -> Enter <pipeline-name> -> Pipeline -> OK
     b. Pipeline
@@ -156,3 +159,137 @@ C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI 
         5. Branch Specifier: */main
         6. Script Path: Jenkinsfile
     c. Build Now
+
+
+D. Setup of EC2 Instance for SonarQube
+1. Launch SonarQube in EC2
+    > Ubuntu
+    > t3.medium (aleast)
+    > 15GiB storage (atleast)
+
+2. Connect via SSH or EC2 Instance Connect (to update hostname)
+    a. sudo apt update
+    b. sudo apt upgrade
+
+3. Add PostgresSQL repository 
+    a. sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+    b. wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+
+4. Install PostgreSQL
+    a. sudo apt update
+    b. sudo apt-get -y install postgresql postgresql-contrib
+    c. sudo systemctl enable postgresql (start postgresql service on boot)
+
+5. Create Database for Sonarqube
+    a. sudo passwd postgres
+    b. Setup password
+    c. su - postgres (login as postgres)
+    d. createuser sonar
+    e. psql 
+    f. ALTER USER sonar WITH ENCRYPTED password 'sonar';
+    g. CREATE DATABASE sonarqube OWNER sonar;
+    h. grant all privileges on DATABASE sonarqube to sonar;
+    i. \q
+    j. exit
+
+6. Add Adoptium repository
+    a. sudo bash
+    b. wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc
+    c. echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+
+7. Install Java 17
+    a. apt update
+    b. apt install temurin-17-jdk
+    c. update-alternatives --config java
+    d. /usr/bin/java --version
+    e. exit 
+8. Linux Kernel Tuning
+    a. sudo nano /etc/security/limits.conf (Increase Limits)
+    b. //Paste the below values at the bottom of the file
+        sonarqube   -   nofile   65536
+        sonarqube   -   nproc    4096
+
+    c. sudo nano /etc/sysctl.conf (Increase Mapped Memory Regions)
+    d. vm.max_map_count = 262144 // (Paste the below values at the bottom of the file)
+    e. sudo init 6 (reboot)
+
+9. Update Security Group to allow port 9000 inbound
+
+
+E. Sonarqube Installation
+1. Connect to SonaQube instance
+
+2. Download and install Sonarqube
+    a. sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.0.65466.zip
+    b. sudo apt install unzip
+    c. sudo unzip sonarqube-9.9.0.65466.zip -d /opt
+    d. sudo mv /opt/sonarqube-9.9.0.65466 /opt/sonarqube (rename the folder)
+
+3. Create user and set permissions
+    a. sudo groupadd sonar (create new group)
+    b. sudo useradd -c "user to run SonarQube" -d /opt/sonarqube -g sonar sonar
+        Purpose: 
+        Creates a new user named "sonar" with the following attributes:
+        -c "user to run SonarQube": Sets the user's comment or description.
+        -d /opt/sonarqube: Sets the user's home directory to /opt/sonarqube.
+        -g sonar: Assigns the user to the "sonar" group.
+        sonar: Specifies the username
+    c. sudo chown sonar:sonar /opt/sonarqube -R
+        > Changes the ownership of the /opt/sonarqube directory and all its contents to the "sonar" user and group. 
+        > This ensures that the SonarQube user has full access to its files and directories.
+
+4. Update Sonarqube properties with DB credentials
+    a. sudo nano /opt/sonarqube/conf/sonar.properties
+    b. Find and replace the below values, you might need to add the sonar.jdbc.url
+    sonar.jdbc.username=sonar
+    sonar.jdbc.password=sonar
+    sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
+
+5. Create service for Sonarqube
+    a. sudo nano /etc/systemd/system/sonar.service
+    b. Paste the below into the file
+
+    # Metadata and dependencies for the service.
+    [Unit] 
+    Description=SonarQube service
+    # Ensures the service starts after the system logger and network are available.
+    After=syslog.target network.target 
+
+    # Defines how the service runs.
+    [Service]
+    Type=forking
+
+    # Commands to start and stop SonarQube using its bundled script.
+    ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+    ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+
+    # Ensures SonarQube runs as the sonar user and group for security.
+    User=sonar
+    Group=sonar
+
+    # Restarts the service if it fails.
+    Restart=always
+
+    # Increases the number of open files (required for SonarQube).
+    LimitNOFILE=65536
+    # Sets the maximum number of processes the service can use.
+    LimitNPROC=4096
+
+    # Ensures the service is enabled at boot under the multi-user target.
+    [Install]
+    WantedBy=multi-user.target
+
+6. Start Sonarqube and Enable service
+    a. sudo systemctl start sonar
+    b. sudo systemctl enable sonar
+    c. sudo systemctl status sonar
+
+7. Watch log files and monitor for startup
+    a. sudo tail -f /opt/sonarqube/logs/sonar.log
+
+8. Access Sonarqube and Update Login Credentials
+    a. <public-ip>:9000
+    b. username: admin; password: admin
+    c. Update the password
+        > username: admin
+        > password: admin123
