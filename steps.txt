@@ -142,3 +142,17 @@ C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI 
             }
         }
     }
+    > Cleanup Workspace
+    > Checkout from SCM
+    > Build Application
+    > Test Application
+4. Build Pipeline
+    a. Build -> New Item -> Enter <pipeline-name> -> Pipeline -> OK
+    b. Pipeline
+        1. Definition: Pipeline Script from SCM
+        2. SCM: Git
+        3. Repository URL: https://github.com/LesterBryanIlao/register-app
+        4. Credentials: github
+        5. Branch Specifier: */main
+        6. Script Path: Jenkinsfile
+    c. Build Now
