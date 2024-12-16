@@ -43,6 +43,7 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         3. sudo usermod -aG docker $USER (add ubuntu to docker group)
         4. groups username (check if docker group is added)
         5. sudo init 6 (reboot)
+
 3. Allow SSH
     a. sudo nano /etc/ssh/sshd_config (update sshd_config to allow port 22)
     b. Uncomment PubkeyAuthentication yes
@@ -69,7 +70,6 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         3. full name
         4. password 
     
-
 5. Setup Node
     a. Manage Jenkins -> Nodes -> Built-In Node -> Configure -> Number of executors -> 0 -> Save
     b. Nodes -> New Node -> put "Jenkins-Agent" -> Tick "Permanent Agent" -> Create
@@ -127,3 +127,18 @@ B. Install Maven to Jenkins and Add Github Credentials to Jenkins
         5. ID: e.g. github
         6. Description: e.g. github
         7. Create
+
+
+C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI Job on Jenkins
+1. Create Jenkinsfile
+    > pipeline { }
+2. Setup Agent
+    > agent { label '<agent-name>'} e.g. agent { label 'jenkins-agent' }
+3. Setup Stages
+    > stages{ 
+        stage ("<stage-name>") {
+            steps {
+                <stage-script>
+            }
+        }
+    }
