@@ -234,7 +234,8 @@ E. Sonarqube Installation
         -d /opt/sonarqube: Sets the user's home directory to /opt/sonarqube.
         -g sonar: Assigns the user to the "sonar" group.
         sonar: Specifies the username
-    c. sudo chown sonar:sonar /opt/sonarqube -R
+    c. id sonar (verify user)
+    d. sudo chown sonar:sonar /opt/sonarqube -R
         > Changes the ownership of the /opt/sonarqube directory and all its contents to the "sonar" user and group. 
         > This ensures that the SonarQube user has full access to its files and directories.
 
