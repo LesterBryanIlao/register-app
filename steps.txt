@@ -320,6 +320,7 @@ F. Integrate Sonarqube with Jenkins
         2. URL: http://<private-ip of jenkins-master>:8080/sonarqube-webhook/
         3. Create
 
+
 G. Build and Push Docker Image using Pipeline Script
 1. Install Docker plugins in Jenkins
     a. Manage Jenkins > Plugins > Available Plugins > Search "Docker"
@@ -364,3 +365,5 @@ G. Build and Push Docker Image using Pipeline Script
                 }
             }
         }
+    c. Add Trivy Scan stage
+    d. Add Cleanup Artifacts stage
