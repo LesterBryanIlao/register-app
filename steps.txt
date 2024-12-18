@@ -294,3 +294,11 @@ E. Sonarqube Installation
     c. Update the password
         > username: admin
         > password: admin123
+
+F. Integrate Sonarqube with Jenkins
+1. Setup SonarQube Access Token
+    a. Login > Admin > My Account > Security
+        1. Name: jenkins-sonar-token	
+        2. Type: Global Analysis Token
+        3. Expires in: No expiration
+    b. Generate
