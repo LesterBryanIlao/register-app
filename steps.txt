@@ -34,7 +34,6 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         1. sudo nano /etc/ssh/sshd_config (update sshd_config to allow port 22)
         2. Uncomment PubkeyAuthentication yes
         3. Uncomment AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2
-
 2. Setup Jenkins-Agent
     a. Do steps a-c from "Setup Jenkins-Master"
     d. Install Docker
@@ -43,7 +42,6 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         3. sudo usermod -aG docker $USER (add ubuntu to docker group)
         4. groups username (check if docker group is added)
         5. sudo init 6 (reboot)
-
 3. Allow SSH
     a. sudo nano /etc/ssh/sshd_config (update sshd_config to allow port 22)
     b. Uncomment PubkeyAuthentication yes
@@ -58,7 +56,6 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
     k. cd .ssh (move to ssh directory)
     l. sudo nano authorized_keys (add the contents of id_rsa.pub)
     m. cat authorized_keys (check if authorized_keys is updated)
-
 4. Open Jenkins-Master 
     a. <public-ip>:8080 (open in browser)
     b. sudo cat /var/lib/jenkins/secrets/initialAdminPassword (get password)
@@ -69,7 +66,6 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         2. password (e.g. clouduser)
         3. full name
         4. password 
-    
 5. Setup Node
     a. Manage Jenkins -> Nodes -> Built-In Node -> Configure -> Number of executors -> 0 -> Save
     b. Nodes -> New Node -> put "Jenkins-Agent" -> Tick "Permanent Agent" -> Create
@@ -121,7 +117,7 @@ B. Install Maven to Jenkins and Add Github Credentials to Jenkins
 2. Add Github Credentials to Jenkins
     a. Manage Jenkins -> Credentials -> Add Credentials
         1. Kind: Username with password
-        2. Scope: Globa (Jenkins, nodes, items, all child item, etc)
+        2. Scope: Global (Jenkins, nodes, items, all child item, etc)
         3. Username: <github username>
         4. password: <github password or token>
         5. ID: e.g. github
@@ -132,10 +128,8 @@ B. Install Maven to Jenkins and Add Github Credentials to Jenkins
 C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI Job on Jenkins
 1. Create Jenkinsfile
     > pipeline { }
-
 2. Setup Agent
     > agent { label '<agent-name>'} e.g. agent { label 'jenkins-agent' }
-
 3. Setup Stages
     > stages{ 
         stage ("<stage-name>") {
@@ -148,7 +142,6 @@ C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI 
     > Checkout from SCM
     > Build Application
     > Test Application
-
 4. Build Pipeline
     a. Build -> New Item -> Enter <pipeline-name> -> Pipeline -> OK
     b. Pipeline
@@ -166,20 +159,16 @@ D. Setup of EC2 Instance for SonarQube
     > Ubuntu
     > t3.medium (aleast)
     > 15GiB storage (atleast)
-
 2. Connect via SSH or EC2 Instance Connect (to update hostname)
     a. sudo apt update
     b. sudo apt upgrade
-
 3. Add PostgresSQL repository 
     a. sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
     b. wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
-
 4. Install PostgreSQL
     a. sudo apt update
     b. sudo apt-get -y install postgresql postgresql-contrib
     c. sudo systemctl enable postgresql (start postgresql service on boot)
-
 5. Create Database for Sonarqube
     a. sudo passwd postgres
     b. Setup password
@@ -191,19 +180,16 @@ D. Setup of EC2 Instance for SonarQube
     h. grant all privileges on DATABASE sonarqube to sonar;
     i. \q
     j. exit
-
 6. Add Adoptium repository
     a. sudo bash
     b. wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc
     c. echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
-
 7. Install Java 17
     a. apt update
     b. apt install temurin-17-jdk
     c. update-alternatives --config java
     d. /usr/bin/java --version
     e. exit 
-
 8. Linux Kernel Tuning
     a. sudo nano /etc/security/limits.conf (Increase Limits)
     b. //Paste the below values at the bottom of the file
@@ -213,19 +199,16 @@ D. Setup of EC2 Instance for SonarQube
     c. sudo nano /etc/sysctl.conf (Increase Mapped Memory Regions)
     d. vm.max_map_count = 262144 // (Paste the below values at the bottom of the file)
     e. sudo init 6 (reboot)
-
 9. Update Security Group to allow port 9000 inbound
 
 
 E. Sonarqube Installation
 1. Connect to SonaQube instance
-
 2. Download and install Sonarqube
     a. sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.0.65466.zip
     b. sudo apt install unzip
     c. sudo unzip sonarqube-9.9.0.65466.zip -d /opt
     d. sudo mv /opt/sonarqube-9.9.0.65466 /opt/sonarqube (rename the folder)
-
 3. Create user and set permissions
     a. sudo groupadd sonar (create new group)
     b. sudo useradd -c "user to run SonarQube" -d /opt/sonarqube -g sonar sonar
@@ -239,14 +222,12 @@ E. Sonarqube Installation
     d. sudo chown sonar:sonar /opt/sonarqube -R
         > Changes the ownership of the /opt/sonarqube directory and all its contents to the "sonar" user and group. 
         > This ensures that the SonarQube user has full access to its files and directories.
-
 4. Update Sonarqube properties with DB credentials
     a. sudo nano /opt/sonarqube/conf/sonar.properties
     b. Find and replace the below values, you might need to add the sonar.jdbc.url
     sonar.jdbc.username=sonar
     sonar.jdbc.password=sonar
     sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
-
 5. Create service for Sonarqube
     a. sudo nano /etc/systemd/system/sonar.service
     b. Paste the below into the file
@@ -285,16 +266,15 @@ E. Sonarqube Installation
     a. sudo systemctl start sonar
     b. sudo systemctl enable sonar
     c. sudo systemctl status sonar
-
 7. Watch log files and monitor for startup
     a. sudo tail -f /opt/sonarqube/logs/sonar.log
-
 8. Access Sonarqube and Update Login Credentials
     a. <public-ip>:9000
     b. username: admin; password: admin
     c. Update the password
         > username: admin
         > password: admin123
+
 
 F. Integrate Sonarqube with Jenkins
 1. Setup SonarQube Access Token
@@ -303,3 +283,34 @@ F. Integrate Sonarqube with Jenkins
         2. Type: Global Analysis Token
         3. Expires in: No expiration
     b. Generate
+2. Add Credentials to Jenkins
+    a. Credentials
+        1. Kind: Secret text
+        2. Scope: Global (Jenkins, nodes, items, all child item, etc)
+        3. Secret: <token generated in step 1>
+        4. ID: <credentials-id> (e.g. jenkins-sonarqube-token)
+3. Add Plugins
+    a. Manage Jenkins -> Manage Plugins -> Available Plugins
+        1. SonarQube Scanner
+        2. Sonar Quality Gates
+        3. Quality Gates
+    b. Install
+    c. Tick "Restart Jenkins when installation is complete and no jobs are running"
+4. Disable Warning
+    a. Warning Notification > Configure which of the warnings are shown > Hidden security warnings
+    b. Untick "Quality Gates Plugin: Credentials transmitted in plain text"
+5. Add to system
+    a. Manage Jenkins > System > SonarQube servers
+        1. Environment variables: unticked
+        2. Name: sonarqube-server
+        3. Server URL: http://<private-ip>:9000
+        4. Server authentication token: Select created in step 4
+6. Add SonarQube Scanner
+    a. Manage Jenkins > Tools > SonarQube Scanner installations > Add SonarQube Scanner
+        1. Name: <insert-name> (e.g. sonarqube-scanner)
+        2. Install automatically: ticked
+        3. Select Version
+        4. Apply and Save
+7. Add to Pipeline Script (Jenkinsfile)
+    a. SonarQube Analysis
+    b. Quality Gate
