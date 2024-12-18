@@ -67,8 +67,8 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         3. full name
         4. password 
 5. Setup Node
-    a. Manage Jenkins -> Nodes -> Built-In Node -> Configure -> Number of executors -> 0 -> Save
-    b. Nodes -> New Node -> put "Jenkins-Agent" -> Tick "Permanent Agent" -> Create
+    a. Manage Jenkins > Nodes > Built-In Node > Configure > Number of executors > 0 > Save
+    b. Nodes > New Node > put "Jenkins-Agent" > Tick "Permanent Agent" > Create
     c. Add Details:
         1. Number of executors: 2
         2. Remote root directory: /home/ubuntu
@@ -77,7 +77,7 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         5. Launch method: "Launch agents via SSH"
         6. Host: <private-ip of Jenkins-Agent>
         7. Credentials:
-            > Add -> Jenkins
+            > Add > Jenkins
             > Domain: Global credentials
             > Kind: SSH Username with private key
             > ID: jenkins-agent
@@ -93,29 +93,29 @@ A. Install and Conigure Jenkins-Master and Jenkins-Agent
         8. Host Key Verification Strategy: "Non verifying Verification Strategy"
         9. Save
     d. Test
-        1. Dashboard -> Create job -> put "Test" -> click Pipeline -> Click OK
-        2. Pipeline Script -> Hello World -> Apply -> Save -> Build Now
+        1. Dashboard > Create job > put "Test" > click Pipeline > Click OK
+        2. Pipeline Script > Hello World > Apply > Save > Build Now
 
 
 B. Install Maven to Jenkins and Add Github Credentials to Jenkins
 1. Install Maven and Eclipse Plugins 
-    a. Manage Jenkins -> Plugins -> Available Plugins >  Search "Maven" then "Eclipse"
+    a. Manage Jenkins > Plugins > Available Plugins >  Search "Maven" then "Eclipse"
         > Maven Integration
         > Pipeline Maven Integration
         > Eclipse Temurin Installer
-    b. Manage Jenkins -> Tools -> Maven Installations
+    b. Manage Jenkins > Tools > Maven Installations
         1. Name: Maven3
         2. Install automatically: (ticked)
         3. Version: 3.9.9
         4. Apply and Save
-    c. Manage Jenkins -> Tools > JDK Installations
+    c. Manage Jenkins > Tools > JDK Installations
         1. Name: Java17
         2. Install automatically: (ticked)
         3. Add Installer: Install from adoptium.net
         4. Version: jdk-17.0.5+8
         5. Apply and Save
 2. Add Github Credentials to Jenkins
-    a. Manage Jenkins -> Credentials -> Add Credentials
+    a. Manage Jenkins > Credentials > Add Credentials
         1. Kind: Username with password
         2. Scope: Global (Jenkins, nodes, items, all child item, etc)
         3. Username: <github username>
@@ -143,7 +143,7 @@ C. Create Pipeline Script(Jenkinsfile) for Built & Test Artifacts and Create CI 
     > Build Application
     > Test Application
 4. Build Pipeline
-    a. Build -> New Item -> Enter <pipeline-name> -> Pipeline -> OK
+    a. Build > New Item > Enter <pipeline-name> > Pipeline > OK
     b. Pipeline
         1. Definition: Pipeline Script from SCM
         2. SCM: Git
@@ -290,7 +290,7 @@ F. Integrate Sonarqube with Jenkins
         3. Secret: <token generated in step 1>
         4. ID: <credentials-id> (e.g. jenkins-sonarqube-token)
 3. Add Plugins
-    a. Manage Jenkins -> Manage Plugins -> Available Plugins
+    a. Manage Jenkins > Manage Plugins > Available Plugins
         1. SonarQube Scanner
         2. Sonar Quality Gates
         3. Quality Gates
@@ -319,3 +319,48 @@ F. Integrate Sonarqube with Jenkins
         1. Name: sonarqube-webhook
         2. URL: http://<private-ip of jenkins-master>:8080/sonarqube-webhook/
         3. Create
+
+G. Build and Push Docker Image using Pipeline Script
+1. Install Docker plugins in Jenkins
+    a. Manage Jenkins > Plugins > Available Plugins > Search "Docker"
+        1. Docker
+        2. Docker Commons
+        3. Docker Pipeline
+        4. Docker API
+        5. docker-build-step
+        6. CloudBees Docker Build and Publish
+    b. Tick "Restart Jenkins when installation is complete"
+2. Add DockerHub Credentials to Jenkins
+    a. Manage Jenkins > Credentials > Add Credentials
+        1. Kind: Username with password
+        2. Scope: Global (Jenkins, nodes, items, all child item, etc)
+        3. Username: <username> (e.g. lesterbryanilao)
+        4. Password: <docker access token>
+        5. ID: (e.g. dockerhub)
+        6. Description: (e.g. dockerhub)
+3. Add to Pipeline Script (Jenkinsfile)
+    a. Define the environment variables:
+        environment {
+	    APP_NAME = "register-app-pipeline"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "lesterbryanilao"
+        DOCKER_PASS = 'dockerhub'
+        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+	    // JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
+    }
+    b. Add the pipeline stage script:
+    stage("Build & Push Docker Image") {
+            steps {
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')
+                    }
+                }
+            }
+        }
