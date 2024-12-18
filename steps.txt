@@ -314,3 +314,8 @@ F. Integrate Sonarqube with Jenkins
 7. Add to Pipeline Script (Jenkinsfile)
     a. SonarQube Analysis
     b. Quality Gate
+8. Create SonarQube Dashboard
+    a. Administration > Configuration > Webhooks > Create
+        1. Name: sonarqube-webhook
+        2. URL: http://<private-ip of jenkins-master>:8080/sonarqube-webhook/
+        3. Create
