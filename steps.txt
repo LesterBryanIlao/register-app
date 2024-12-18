@@ -203,6 +203,7 @@ D. Setup of EC2 Instance for SonarQube
     c. update-alternatives --config java
     d. /usr/bin/java --version
     e. exit 
+
 8. Linux Kernel Tuning
     a. sudo nano /etc/security/limits.conf (Increase Limits)
     b. //Paste the below values at the bottom of the file
