@@ -559,3 +559,12 @@ L. Automate ArgoCD Deployment Job using Gitops Repository
 6. Configure CI job
     > Poll SCM
         1. Schedule: *****
+
+
+M. Verify if CI/CD Pipeline is working
+1. Commit changes to register-app repo
+2. CI Job should trigger automatically
+3. Docker image should be built and pushed to DockerHub with updated tag based on the build number
+4. deployment.yaml file should be updated with the latest image tag
+5. The app in ArgoCD should be updated with the latest image tag
+6. Changes are updated to the webapp
