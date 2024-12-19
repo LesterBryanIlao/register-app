@@ -401,20 +401,20 @@ H. Setup Bootstrap Server for eksctl and Setup Kubernetes using eksctl
         2. AWS Secret Access Key: <secret-key>
         3. Default region name: <region> (e.g. ap-southeast-1)
         4. Default output format: json
-3. Installing kubectl
+3. Installing kubectl (still in root user and ~ directory)
     > sudo su
     > curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
     > ll 
     > chmod +x ./kubectl
     > mv kubectl /bin
     > kubectl version --output=yaml
-4. Installing eksctl
+4. Installing eksctl (still in root user and ~ directory)
     > curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
     > cd /tmp
     > ll
     > sudo mv /tmp/eksctl /bin
     > eksctl version
-5. Setup and attach IAM Role for EKS
+5. Setup and attach IAM Role for EKS (still in root user and ~ directory)
     1. Create IAM Role
         > Create IAM Role
         > AWS Service
@@ -425,7 +425,7 @@ H. Setup Bootstrap Server for eksctl and Setup Kubernetes using eksctl
     2. Attach IAM Role
         > Select EKS instance
         > Actions > Security > Modify IAM Role > Select eksctl_role > Update IAM Role
-6. Setup Kubernetes using eksctl
+6. Setup Kubernetes using eksctl (still in root user and ~ directory)
     > eksctl create cluster --name ilale-cluster \
     --region ap-southeast-1 \
     --node-type t2.small \
@@ -433,3 +433,63 @@ H. Setup Bootstrap Server for eksctl and Setup Kubernetes using eksctl
     > kubectl get nodes
     OR
     > EKS > Select the cluster > Compute Tab
+
+I. ArgoCD Installation and Setup (still in root user and ~ directory)
+1. Create a namespace for argocd
+    > kubectl create namespace argocd
+2. Apply the yaml configuration files for ArgoCd
+    > kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+3. View the pods created in the ArgoCD namespace
+    > kubectl get pods -n argocd
+4. To interact with the API Server we need to deploy the CLI:
+    > curl --silent --location -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.4.7/argocd-linux-amd64
+    > chmod +x /usr/local/bin/argocd
+5. Expose argocd-server
+    > kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+6. Wait about 2 minutes for the LoadBalancer creation
+    > kubectl get svc -n argocd
+7. Get pasword and decode it.
+    > kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
+    > Copy the password
+    > echo <password from previous step> | base64 --decode
+    > Note the decoded password.
+8. Update the password
+    > Get the external IP of the argocd-server from step 6
+    e.g. a4ce37c3a3977407f9fd741be9e62897-521039770.ap-southeast-1.elb.amazonaws.com
+    > Login
+        1. username: admin
+        2. password: <password from step 7>
+    > User Info > Update Password > Fill in the details
+        1. Current Password: <password from step 7>
+        2. New Password: <new password> (e.g. admin123)
+        3. Confirm Password: <new password> (e.g. admin123)
+
+
+J. Add EKS Cluster to ArgoCD
+1. Login to ArgoCD from CLI
+    > argocd login <external-ip> --username admin
+    e.g. a4ce37c3a3977407f9fd741be9e62897-521039770.ap-southeast-1.elb.amazonaws.com
+    > enter "y"
+    > enter updated password 
+2. Check current existing cluster
+    > Go to the server > Settings > Clusters
+    OR
+    > argocd cluster list (still login in argocd)
+3. Show the details of EKS cluster
+    > kubectl config get-contexts
+4. Add above EKS cluster to ArgoCD with below command
+    > argocd cluster add <cluster's name from previous step> --name <name>
+    e.g. argocd cluster add arn:aws:eks:ap-southeast-1:683708498221:cluster/ilale-cluster --name ilale-eks-cluster
+5. kubectl get svc
+
+CLEANUP STEP
+> kubectl get all
+> kubectl delete deployment.apps/ilale-regapp       //it will delete the deployment
+> kubectl delete service/ilale-service              //it will delete the service
+> eksctl delete cluster ilale --region ap-southeast-1     
+OR    
+eksctl delete cluster --region=ap-south-1 --name=ilalee-cluster      //it will delete the EKS cluster
+
+K. Configure ArgoCD to Deploy Pods on EKS
+
+L. Automate ArgoCD Deployment using GitOps Github Repository
