@@ -556,5 +556,6 @@ L. Automate ArgoCD Deployment Job using Gitops Repository
         6. Create
     > Set the environment variables
     > Create stage for "Trigger CD Pipeline"
-
-
+6. Configure CI job
+    > Poll SCM
+        1. Schedule: *****
