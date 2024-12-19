@@ -540,3 +540,5 @@ L. Automate ArgoCD Deployment Job using Gitops Repository
     > Definition: Pipeline Script from SCM
     > Repository URL: https://github.com/LesterBryanIlao/gitops-register-app
     > Credentials: github
+    > Branch Specifier: */main
+    > Script Path: Jenkinsfile
