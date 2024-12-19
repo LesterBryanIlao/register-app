@@ -491,5 +491,52 @@ OR
 eksctl delete cluster --region=ap-south-1 --name=ilalee-cluster      //it will delete the EKS cluster
 
 K. Configure ArgoCD to Deploy Pods on EKS
+1. Get gitops repo link
+2. Settings > Repository > Connect Repo
+    1. Choose your connection method: VIA HTTPS
+    2. Type: git
+    3. Project: default
+    4. Repository URL: https://github.com/LesterBryanIlao/gitops-register-app
+    5. Username: <username>
+    6. Password: <access-token>
+    7. Connect
+3. Create deployment.yaml file
+    > Update deployment.yaml file in gitops-register-app repo
+    > Make sure that the image name and the tag is the same in the dockerhub
+5. ArgoCD Dashboard > New App > Fill in the details
+    1. Application Name: register-app
+    2. Project Name: default
+    3. Sync Policy: Automatic
+        > Tick Prune Resources
+        > Tick Self Heal
+    4. Source
+        > Repository URL: https://github.com/LesterBryanIlao/gitops-register-app
+        > Path: ./
+    5. Destination
+        > Cluster URL: select the EKS cluster
+        > Namespace: default
+    6. Create
+6. Checks 
+    1. Pods
+        > kubectl get pods (to check if the pods are running)
+    2. Check the service created by the default namespace
+        > kubectl get svc
+        > Note the external IP
+        > <external-ip>:8080 (open in browser)
+        > <external-ip>:8080/webapp/
 
-L. Automate ArgoCD Deployment using GitOps Github Repository
+
+L. Automate ArgoCD Deployment Job using Gitops Repository
+1. Jenkins > New Item > Enter "gitops-register-app-cd" > Pipeline > OK
+2. Tick "Discard old builds"
+    > Strategy: Log Rotation
+    > Max # of builds to keep: 2
+3. Tick "This project is parameterized" > Add Parameter > String Parameter
+    > Name: IMAGE_TAG
+    > 
+4. Tick "Trigger builds remotely"
+    > Authentication: gitops-token
+5. Pipeline
+    > Definition: Pipeline Script from SCM
+    > Repository URL: https://github.com/LesterBryanIlao/gitops-register-app
+    > Credentials: github
