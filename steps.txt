@@ -542,3 +542,19 @@ L. Automate ArgoCD Deployment Job using Gitops Repository
     > Credentials: github
     > Branch Specifier: */main
     > Script Path: Jenkinsfile
+    > Create Jenkins API Token
+        1. User > Security > API Token > Add New Token
+        2. JENKINS_API_TOKEN
+        3. Copy the token
+        4. Apply and Save
+    > Credentials
+        1. Type: Secret text
+        2. Scope: Global (Jenkins, nodes, items, all child item, etc)
+        3. Secret: <token>
+        4. ID: JENKINS_API_TOKEN
+        5. Description: JENKINS_API_TOKEN
+        6. Create
+    > Set the environment variables
+    > Create stage for "Trigger CD Pipeline"
+
+
