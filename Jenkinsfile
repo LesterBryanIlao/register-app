@@ -42,57 +42,57 @@ pipeline {
            }
        }
 
-       stage("SonarQube Analysis"){
-           steps {
-                script {
-                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') { 
-                            sh "mvn sonar:sonar"
-                    }
-                }	
-            }
-        }
+    //    stage("SonarQube Analysis"){
+    //        steps {
+    //             script {
+    //                 withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') { 
+    //                         sh "mvn sonar:sonar"
+    //                 }
+    //             }	
+    //         }
+    //     }
 
-       stage("Quality Gate"){
-           steps {
-                script {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true, credentialsId: 'jenkins-sonarqube-token'
-                    }
-                }
-            }
-        }
+    //    stage("Quality Gate"){
+    //        steps {
+    //             script {
+    //                 timeout(time: 5, unit: 'MINUTES') {
+    //                     waitForQualityGate abortPipeline: true, credentialsId: 'jenkins-sonarqube-token'
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        stage("Build & Push Docker Image") {
-            steps {
-                script {
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build "${IMAGE_NAME}"
-                    }
+    //     stage("Build & Push Docker Image") {
+    //         steps {
+    //             script {
+    //                 docker.withRegistry('',DOCKER_PASS) {
+    //                     docker_image = docker.build "${IMAGE_NAME}"
+    //                 }
 
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
-                    }
-                }
-            }
-        }
+    //                 docker.withRegistry('',DOCKER_PASS) {
+    //                     docker_image.push("${IMAGE_TAG}")
+    //                     docker_image.push('latest')
+    //                 }
+    //             }
+    //         }
+    //     }
 
-       stage("Trivy Scan") {
-           steps {
-               script {
-	            sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image lesterbryanilao/register-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
-               }
-           }
-       }
+    //    stage("Trivy Scan") {
+    //        steps {
+    //            script {
+	//             sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image lesterbryanilao/register-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
+    //            }
+    //        }
+    //    }
 
-       stage ('Cleanup Artifacts') {
-           steps {
-               script {
-                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-                    sh "docker rmi ${IMAGE_NAME}:latest"
-               }
-          }
-       }
+    //    stage ('Cleanup Artifacts') {
+    //        steps {
+    //            script {
+    //                 sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+    //                 sh "docker rmi ${IMAGE_NAME}:latest"
+    //            }
+    //       }
+    //    }
 
     //    stage("Trigger CD Pipeline") {
     //         steps {
