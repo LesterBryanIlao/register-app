@@ -367,3 +367,69 @@ G. Build and Push Docker Image using Pipeline Script
         }
     c. Add Trivy Scan stage
     d. Add Cleanup Artifacts stage
+
+H. Setup Bootstrap Server for eksctl and Setup Kubernetes using eksctl
+1. Setup Instance
+    a. Launch EKS-Bootstrap-Server in EC2
+        > Ubuntu
+        > t2.micro
+        > 15GiB storage (atleast)
+    b. Connect via SSH or EC2 Instance Connect (to update hostname)
+        1. sudo apt update
+        2. sudo apt upgrade
+        3. sudo nano /etc/hostname (update hostname to EKS-Bootstrap-Server)
+        4. cat /etc/hostname (check if hostname is updated)
+        5. sudo init 6 (reboot)
+2. Install and ConfigureAWS ClI
+    > sudo su
+    > cd ~
+
+    > curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    > apt install unzip
+    > unzip awscliv2.zip
+    > sudo ./aws/install 
+    
+    OR 
+    
+    > sudo yum remove -y aws-cli
+    > pip3 install --user awscli
+    > sudo ln -s $HOME/.local/bin/aws /usr/bin/aws
+    
+    > aws --version
+    > aws configure
+        1. AWS Access Key ID: <access-key>
+        2. AWS Secret Access Key: <secret-key>
+        3. Default region name: <region> (e.g. ap-southeast-1)
+        4. Default output format: json
+3. Installing kubectl
+    > sudo su
+    > curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+    > ll 
+    > chmod +x ./kubectl
+    > mv kubectl /bin
+    > kubectl version --output=yaml
+4. Installing eksctl
+    > curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+    > cd /tmp
+    > ll
+    > sudo mv /tmp/eksctl /bin
+    > eksctl version
+5. Setup and attach IAM Role for EKS
+    1. Create IAM Role
+        > Create IAM Role
+        > AWS Service
+        > Use Case: EC2
+        > Add Permissions: AdministratorAccess
+        > Role Name: eksctl_role
+        > Create Role
+    2. Attach IAM Role
+        > Select EKS instance
+        > Actions > Security > Modify IAM Role > Select eksctl_role > Update IAM Role
+6. Setup Kubernetes using eksctl
+    > eksctl create cluster --name ilale-cluster \
+    --region ap-southeast-1 \
+    --node-type t2.small \
+    --nodes 3
+    > kubectl get nodes
+    OR
+    > EKS > Select the cluster > Compute Tab
